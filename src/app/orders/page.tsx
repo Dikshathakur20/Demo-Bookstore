@@ -6,7 +6,6 @@ import { OrdersAPI, Order } from "@/lib/api";
 import { useToast } from "@/components/toast";
 import { getBookCover } from "@/utils/bookCovers";
 
-// Skeleton Component
 function OrderSkeleton() {
   return (
     <div className="order-skeleton">
@@ -26,7 +25,6 @@ function OrderSkeleton() {
   );
 }
 
-// Status Badge Component
 function StatusBadge({ status }: { status: string }) {
   const statusMap: Record<string, { label: string; color: string; bg: string }> = {
     pending: { label: "Pending", color: "#d97706", bg: "#fef3c7" },
@@ -49,7 +47,6 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-// Format Date to Indian Format
 function formatDate(dateString: string) {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
@@ -60,7 +57,6 @@ function formatDate(dateString: string) {
   });
 }
 
-// Format Date with Time
 function formatDateTime(dateString: string) {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
@@ -73,7 +69,6 @@ function formatDateTime(dateString: string) {
   });
 }
 
-// Custom Confirm Dialog Component
 function ConfirmDialog({ 
   isOpen, 
   onConfirm, 
@@ -114,7 +109,6 @@ export default function OrdersPage() {
   const [fetching, setFetching] = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
   
-  // Confirm Dialog State
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     orderId: string | null;
@@ -133,7 +127,8 @@ export default function OrdersPage() {
       const response = await OrdersAPI.getOrders();
       console.log("📦 Orders API Response:", response);
       
-      if (response && response.items) {
+      // ✅ Fix: Check if response has items property
+      if (response && 'items' in response && Array.isArray(response.items)) {
         setOrders(response.items);
       } else if (Array.isArray(response)) {
         setOrders(response);
@@ -150,7 +145,6 @@ export default function OrdersPage() {
     }
   }
 
-  // Open confirm dialog
   function openConfirmDialog(orderId: string) {
     setConfirmDialog({
       isOpen: true,
@@ -158,7 +152,6 @@ export default function OrdersPage() {
     });
   }
 
-  // Close confirm dialog
   function closeConfirmDialog() {
     setConfirmDialog({
       isOpen: false,
@@ -166,7 +159,6 @@ export default function OrdersPage() {
     });
   }
 
-  // Handle cancel order
   async function handleCancelOrder() {
     const orderId = confirmDialog.orderId;
     if (!orderId) return;
@@ -187,13 +179,11 @@ export default function OrdersPage() {
 
   return (
     <div className="orders-container">
-      {/* Header */}
       <div className="orders-header">
         <h1 className="orders-title">My Orders</h1>
         <span className="orders-count">{orders.length} orders</span>
       </div>
 
-      {/* Loading State */}
       {fetching && (
         <div className="orders-grid">
           {[...Array(3)].map((_, i) => (
@@ -202,7 +192,6 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Empty State */}
       {!fetching && orders.length === 0 && (
         <div className="orders-empty">
           <span className="empty-icon">📦</span>
@@ -214,12 +203,10 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Orders List */}
       {!fetching && orders.length > 0 && (
         <div className="orders-list">
           {orders.map((order) => (
             <div key={order.id} className="order-card">
-              {/* Order Header */}
               <div className="order-header">
                 <div className="order-header-left">
                   <span className="order-id">Order #{order.id?.slice(0, 8) || order.id}</span>
@@ -230,11 +217,9 @@ export default function OrdersPage() {
                 <StatusBadge status={order.status} />
               </div>
 
-              {/* Order Items */}
               <div className="order-items">
                 {order.items && order.items.length > 0 ? (
                   order.items.map((item) => {
-                    // ✅ Get cover image using utility
                     const coverUrl = item.book ? getBookCover({
                       id: item.book.id,
                       title: item.book.title,
@@ -282,18 +267,18 @@ export default function OrdersPage() {
                 )}
               </div>
 
-              {/* Order Footer */}
               <div className="order-footer">
                 <div className="order-footer-left">
                   <div className="order-total">
                     <span className="total-label">Total:</span>
                     <span className="total-amount">₹{order.total_amount?.toFixed(2) || "0.00"}</span>
                   </div>
-                  {order.estimated_delivery && (
+                  {/* ✅ Fix: Use estimated_delivery from order if exists */}
+                  {(order as any).estimated_delivery && (
                     <div className="order-delivery">
                       <span className="delivery-icon">🚚</span>
                       <span className="delivery-label">
-                        Estimated Delivery: {formatDate(order.estimated_delivery)}
+                        Estimated Delivery: {formatDate((order as any).estimated_delivery)}
                       </span>
                     </div>
                   )}
@@ -321,7 +306,6 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Custom Confirm Dialog */}
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
         onConfirm={handleCancelOrder}

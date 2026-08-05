@@ -122,7 +122,17 @@ export type Order = {
   created_at?: string;
   updated_at?: string;
   items: any[];
+  estimated_delivery?: string;
 };
+
+export interface OrderItem {
+  id: string;
+  book_id: string;
+  quantity: number;
+  price_at_time: number;
+  book_name?: string;
+  book?: Book;
+}
 
 export type PlaceOrderPayload = {
   shipping_address: string;

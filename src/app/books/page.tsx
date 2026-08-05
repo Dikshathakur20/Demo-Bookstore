@@ -73,14 +73,14 @@ export default function BooksPage() {
     }
 
     const book = books.find(b => b.id === bookId);
-    if (book && book.stock_quantity < 1) {
+    // ✅ Fix: Check if book exists and stock_quantity is defined
+    if (book && (book.stock_quantity ?? 0) < 1) {
       showToast("Sorry, this book is out of stock", "error");
       return;
     }
 
     setAddingId(bookId);
     try {
-      // ✅ CartAPI.addToCart expects { book_id, quantity }
       await CartAPI.addToCart(bookId, 1);
       showToast("✅ Added to cart!", "success");
       await loadBooks();
@@ -118,13 +118,11 @@ export default function BooksPage() {
 
   return (
     <div className="books-container">
-      {/* Header */}
       <div className="books-header">
         <h1 className="books-title">📚 Browse Books</h1>
         <p className="books-subtitle">Discover your next favorite read</p>
       </div>
 
-      {/* Search */}
       <div className="search-wrapper">
         <span className="search-icon">🔍</span>
         <input
@@ -141,7 +139,6 @@ export default function BooksPage() {
         )}
       </div>
 
-      {/* Categories */}
       <div className="categories-wrapper">
         <button
           onClick={() => setCategoryId("")}
@@ -160,12 +157,10 @@ export default function BooksPage() {
         ))}
       </div>
 
-      {/* Results Count */}
       <div className="results-count">
         <span>{books.length} books found</span>
       </div>
 
-      {/* Books Grid */}
       <div className="books-grid">
         {fetching ? (
           Array.from({ length: 6 }).map((_, i) => (
@@ -179,10 +174,13 @@ export default function BooksPage() {
               category: book.category_id,
             });
 
+            // ✅ Fix: Use nullish coalescing for undefined values
+            const stockQuantity = book.stock_quantity ?? 0;
+            const ratingAvg = book.rating_avg ?? 0;
+
             return (
               <div key={book.id} className="book-card-wrapper">
                 <Link href={`/books/${book.id}`} className="book-card">
-                  {/* Cover Image */}
                   <div className="book-cover-wrapper">
                     {book.cover_image_url ? (
                       <img
@@ -201,15 +199,14 @@ export default function BooksPage() {
                         className="book-cover"
                       />
                     )}
-                    {book.stock_quantity < 1 && (
+                    {stockQuantity < 1 && (
                       <div className="book-out-of-stock">Out of Stock</div>
                     )}
-                    {book.rating_avg > 0 && (
-                      <div className="book-rating">⭐ {book.rating_avg}</div>
+                    {ratingAvg > 0 && (
+                      <div className="book-rating">⭐ {ratingAvg}</div>
                     )}
                   </div>
 
-                  {/* Book Info */}
                   <div className="book-info">
                     <h3 className="book-title">{book.title}</h3>
                     <p className="book-author">{book.author}</p>
@@ -217,21 +214,20 @@ export default function BooksPage() {
                   </div>
                 </Link>
 
-                {/* Add to Cart Button - Outside Link */}
                 <div className="book-actions">
                   <button
                     onClick={(e) => handleAddToCart(e, book.id)}
                     disabled={
                       addingId === book.id || 
-                      book.stock_quantity < 1
+                      stockQuantity < 1
                     }
                     className={`add-to-cart-btn ${
-                      book.stock_quantity < 1 ? "out-of-stock" : ""
+                      stockQuantity < 1 ? "out-of-stock" : ""
                     }`}
                   >
                     {addingId === book.id ? (
                       <span className="btn-spinner">⏳</span>
-                    ) : book.stock_quantity < 1 ? (
+                    ) : stockQuantity < 1 ? (
                       "Out of Stock"
                     ) : (
                       "Add to Cart"
