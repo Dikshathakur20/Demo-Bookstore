@@ -109,21 +109,22 @@ export type Cart = {
   total_price: number;
 };
 
-export type Order = {
+export interface Order {
   id: string;
   user_id: string;
   total_amount: number;
   status: string;
-  shipping_address?: string;
-  payment_status?: string;
-  payment_method?: string;
-  payment_id?: string;
-  notes?: string;
-  created_at?: string;
-  updated_at?: string;
-  items: any[];
+  shipping_address: string;
+  payment_status: string;
+  payment_method: string | null;
+  payment_id: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
   estimated_delivery?: string;
+  items: OrderItem[];
 };
+
 
 export interface OrderItem {
   id: string;
@@ -132,7 +133,7 @@ export interface OrderItem {
   price_at_time: number;
   book_name?: string;
   book?: Book;
-}
+};
 
 export type PlaceOrderPayload = {
   shipping_address: string;

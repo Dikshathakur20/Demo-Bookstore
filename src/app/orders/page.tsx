@@ -127,7 +127,6 @@ export default function OrdersPage() {
       const response = await OrdersAPI.getOrders();
       console.log("📦 Orders API Response:", response);
       
-      // ✅ Fix: Check if response has items property
       if (response && 'items' in response && Array.isArray(response.items)) {
         setOrders(response.items);
       } else if (Array.isArray(response)) {
@@ -161,7 +160,11 @@ export default function OrdersPage() {
 
   async function handleCancelOrder() {
     const orderId = confirmDialog.orderId;
-    if (!orderId) return;
+    // ✅ Fix: Check if orderId exists
+    if (!orderId) {
+      showToast("Order ID not found", "error");
+      return;
+    }
 
     closeConfirmDialog();
     setCancelling(orderId);
@@ -273,7 +276,6 @@ export default function OrdersPage() {
                     <span className="total-label">Total:</span>
                     <span className="total-amount">₹{order.total_amount?.toFixed(2) || "0.00"}</span>
                   </div>
-                  {/* ✅ Fix: Use estimated_delivery from order if exists */}
                   {(order as any).estimated_delivery && (
                     <div className="order-delivery">
                       <span className="delivery-icon">🚚</span>
